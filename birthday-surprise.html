@@ -1,1176 +1,327 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>A Little Surprise</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<style>
-/* ============================================================
-   DESIGN TOKENS
-   ============================================================ */
-:root {
-  --ink:        #0b0710;
-  --aubergine:  #1e1229;
-  --plum:       #2c1a3a;
-  --rose:       #e8577f;
-  --rose-soft:  #f28aa6;
-  --gold:       #d8ac74;
-  --cream:      #f4ecdf;
-  --lavender:   #cbb9d8;
-
-  --font-display: 'Cormorant Garamond', serif;
-  --font-body: 'Jost', sans-serif;
-
-  --ease: cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-* { box-sizing: border-box; }
-
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--ink);
-  color: var(--cream);
-  font-family: var(--font-body);
-  overflow-x: hidden;
-}
-
-body {
-  min-height: 100vh;
-  background:
-    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(232, 87, 127, 0.14), transparent 70%),
-    radial-gradient(ellipse 70% 50% at 20% 100%, rgba(216, 172, 116, 0.08), transparent 70%),
-    linear-gradient(180deg, #0b0710 0%, #150c1d 50%, #0b0710 100%);
-}
-
-button {
-  font-family: var(--font-body);
-  cursor: pointer;
-  border: none;
-  background: none;
-  color: inherit;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-  }
-}
-
-:focus-visible {
-  outline: 2px solid var(--rose-soft);
-  outline-offset: 3px;
-}
-
-/* ============================================================
-   AMBIENT CANVAS + MUSIC TOGGLE
-   ============================================================ */
-#particle-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.music-toggle {
-  position: fixed;
-  top: 18px;
-  right: 18px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(244, 236, 223, 0.06);
-  border: 1px solid rgba(244, 236, 223, 0.18);
-  backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 50;
-  font-size: 18px;
-  color: var(--gold);
-  transition: transform 0.3s var(--ease), background 0.3s var(--ease);
-}
-
-.music-toggle:active { transform: scale(0.92); }
-
-.music-toggle.playing .music-icon {
-  animation: music-pulse 1.6s ease-in-out infinite;
-}
-
-@keyframes music-pulse {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.15); }
-}
-
-/* ============================================================
-   SCREEN SCAFFOLDING
-   ============================================================ */
-.screen {
-  position: relative;
-  z-index: 2;
-  min-height: 100vh;
-  width: 100%;
-  display: none;
-  padding: 32px 24px 56px;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  opacity: 0;
-}
-
-.screen.active {
-  display: flex;
-}
-
-.screen.enter {
-  animation: screen-in 0.9s var(--ease) forwards;
-}
-
-@keyframes screen-in {
-  from { opacity: 0; transform: scale(1.02); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-/* ============================================================
-   SCREEN 1 — OPENING
-   ============================================================ */
-.screen-opening.active { opacity: 1; }
-
-.opening-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 40px;
-}
-
-.opening-line {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: 500;
-  font-size: clamp(1.5rem, 6vw, 2.4rem);
-  color: var(--cream);
-  max-width: 18ch;
-  line-height: 1.4;
-  opacity: 0;
-  animation: rise-in 1.4s var(--ease) 0.3s forwards;
-}
-
-@keyframes rise-in {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.tap-open-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 22px 44px;
-  border-radius: 999px;
-  border: 1px solid rgba(232, 87, 127, 0.4);
-  background: rgba(232, 87, 127, 0.08);
-  color: var(--rose-soft);
-  font-size: 1rem;
-  letter-spacing: 0.02em;
-  opacity: 0;
-  animation: rise-in 1.4s var(--ease) 0.8s forwards, glow-pulse 2.6s ease-in-out 2.2s infinite;
-}
-
-.tap-open-icon { font-size: 1.6rem; }
-
-@keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 0px rgba(232, 87, 127, 0); }
-  50% { box-shadow: 0 0 34px rgba(232, 87, 127, 0.45); }
-}
-
-.tap-open-btn:active { transform: scale(0.96); }
-
-/* ============================================================
-   SCREEN 2 — BIRTHDAY WISH
-   ============================================================ */
-#confetti-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.birthday-content {
-  position: relative;
-  z-index: 2;
-  max-width: 560px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-
-.birthday-heading {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(2.6rem, 11vw, 4.4rem);
-  margin: 0;
-  background: linear-gradient(100deg, var(--rose-soft), var(--gold) 60%, var(--rose-soft));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.birthday-subline {
-  font-size: 1.05rem;
-  color: var(--lavender);
-  margin: 0 0 8px;
-}
-
-.wish-text {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin: 6px 0 30px;
-}
-
-.wish-line {
-  font-family: var(--font-display);
-  font-size: clamp(1.1rem, 4.4vw, 1.5rem);
-  line-height: 1.55;
-  color: var(--cream);
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 1s var(--ease), transform 1s var(--ease);
-}
-
-.wish-line.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.continue-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 0.8s var(--ease), transform 0.8s var(--ease);
-}
-
-.continue-wrap.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.more-line {
-  margin: 0;
-  color: var(--lavender);
-  font-style: italic;
-  font-family: var(--font-display);
-}
-
-.continue-btn {
-  padding: 16px 34px;
-  border-radius: 999px;
-  background: linear-gradient(120deg, var(--rose), #c9436b);
-  color: var(--cream);
-  font-size: 0.95rem;
-  letter-spacing: 0.02em;
-  box-shadow: 0 8px 30px rgba(232, 87, 127, 0.35);
-  transition: transform 0.25s var(--ease);
-}
-
-.continue-btn:active { transform: scale(0.96); }
-
-/* ============================================================
-   SCREEN 3 — TIMELINE
-   ============================================================ */
-.timeline-content {
-  width: 100%;
-  max-width: 560px;
-}
-
-.section-heading {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(2rem, 8vw, 2.8rem);
-  margin: 0 0 6px;
-  color: var(--cream);
-}
-
-.heart-accent { color: var(--rose-soft); }
-
-.section-subline {
-  color: var(--lavender);
-  margin: 0 0 36px;
-  font-size: 1rem;
-}
-
-.timeline-list {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  text-align: left;
-  padding-left: 26px;
-}
-
-.timeline-list::before {
-  content: '';
-  position: absolute;
-  left: 7px;
-  top: 10px;
-  bottom: 10px;
-  width: 1px;
-  background: linear-gradient(180deg, rgba(232,87,127,0.05), rgba(232,87,127,0.55), rgba(232,87,127,0.05));
-}
-
-.timeline-card {
-  position: relative;
-  padding: 20px 22px;
-  border-radius: 18px;
-  background: rgba(244, 236, 223, 0.05);
-  border: 1px solid rgba(244, 236, 223, 0.1);
-  backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  opacity: 0;
-  transform: translateY(16px);
-  transition: transform 0.35s var(--ease), background 0.35s var(--ease), box-shadow 0.35s var(--ease);
-}
-
-.timeline-card.visible {
-  animation: card-in 0.7s var(--ease) forwards;
-}
-
-@keyframes card-in {
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.timeline-card::before {
-  content: '';
-  position: absolute;
-  left: -23px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--rose-soft);
-  box-shadow: 0 0 10px rgba(232, 87, 127, 0.7);
-}
-
-.timeline-card:active {
-  background: rgba(232, 87, 127, 0.1);
-  box-shadow: 0 0 26px rgba(232, 87, 127, 0.18);
-}
-
-.timeline-card-icon {
-  font-size: 1.3rem;
-  flex-shrink: 0;
-}
-
-.timeline-card-date {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  color: var(--cream);
-}
-
-.timeline-card-hint {
-  margin: 2px 0 0;
-  font-size: 0.8rem;
-  color: var(--lavender);
-}
-
-/* ============================================================
-   SCREEN 4 — MEMORY REVEAL
-   ============================================================ */
-.screen-memory {
-  flex-direction: column;
-}
-
-.memory-transition {
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-  align-items: center;
-}
-
-.memory-transition.active {
-  display: flex;
-  animation: fade-simple 0.6s ease forwards;
-}
-
-@keyframes fade-simple {
-  from { opacity: 0; } to { opacity: 1; }
-}
-
-.memory-transition-text {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.3rem;
-  color: var(--lavender);
-  margin: 0;
-}
-
-.memory-transition-date {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  color: var(--rose-soft);
-  margin: 0;
-}
-
-.memory-detail {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  max-width: 480px;
-  width: 100%;
-}
-
-.memory-detail.active {
-  display: flex;
-  animation: fade-simple 0.9s ease forwards;
-}
-
-.memory-date {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-  color: var(--cream);
-  margin: 0 0 18px;
-}
-
-.memory-image-frame {
-  width: 100%;
-  aspect-ratio: 4 / 5;
-  max-height: 56vh;
-  border-radius: 20px;
-  overflow: hidden;
-  position: relative;
-  background: var(--plum);
-  border: 1px solid rgba(244, 236, 223, 0.12);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
-  filter: blur(14px);
-  transform: scale(1.06);
-  opacity: 0;
-}
-
-.memory-image-frame.revealed {
-  animation: image-reveal 1.1s var(--ease) forwards;
-}
-
-@keyframes image-reveal {
-  to { filter: blur(0); transform: scale(1); opacity: 1; }
-}
-
-.memory-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.memory-image-fallback {
-  position: absolute;
-  inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  color: var(--lavender);
-  font-size: 0.85rem;
-  padding: 24px;
-  text-align: center;
-}
-
-.memory-image-fallback span {
-  font-size: 2.4rem;
-}
-
-.memory-image-frame.broken .memory-image-fallback { display: flex; }
-.memory-image-frame.broken .memory-image { display: none; }
-
-.memory-caption {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.2rem;
-  color: var(--lavender);
-  margin: 20px 0 8px;
-  max-width: 38ch;
-}
-
-.memory-nav {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-top: 22px;
-}
-
-.nav-btn {
-  color: var(--cream);
-  font-size: 0.95rem;
-  padding: 12px 6px;
-  min-height: 44px;
-}
-
-.nav-btn-heart {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  border: 1px solid rgba(232, 87, 127, 0.4);
-  font-size: 1.3rem;
-  color: var(--rose-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  transition: transform 0.25s var(--ease), background 0.25s var(--ease);
-}
-
-.nav-btn-heart.liked {
-  background: rgba(232, 87, 127, 0.25);
-  transform: scale(1.1);
-}
-
-.back-link {
-  margin-top: 30px;
-  color: var(--lavender);
-  font-size: 0.85rem;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  min-height: 44px;
-}
-
-/* ============================================================
-   SCREEN 5 — FINAL
-   ============================================================ */
-.final-content {
-  max-width: 520px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.final-line {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: clamp(1.1rem, 4.6vw, 1.5rem);
-  color: var(--lavender);
-  margin: 0 0 14px;
-  opacity: 0;
-}
-
-.final-line-3 {
-  color: var(--cream);
-  font-size: clamp(1.3rem, 5.6vw, 1.8rem);
-}
-
-.screen-final.reveal .final-line-1 { animation: rise-in 1s var(--ease) 0.2s forwards; }
-.screen-final.reveal .final-line-2 { animation: rise-in 1s var(--ease) 1.4s forwards; }
-.screen-final.reveal .final-line-3 { animation: rise-in 1s var(--ease) 2.6s forwards; }
-
-.final-heart {
-  width: 70px;
-  height: 63px;
-  margin: 28px 0 20px;
-  opacity: 0;
-}
-
-.screen-final.reveal .final-heart {
-  animation: rise-in 1s var(--ease) 3.6s forwards, heartbeat 1.6s ease-in-out 4.8s infinite;
-}
-
-@keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  25% { transform: scale(1.12); }
-  40% { transform: scale(1); }
-}
-
-.heart-svg { width: 100%; height: 100%; fill: var(--rose); filter: drop-shadow(0 0 18px rgba(232,87,127,0.6)); }
-
-.final-message {
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--lavender);
-  max-width: 42ch;
-  opacity: 0;
-}
-
-.screen-final.reveal .final-message { animation: rise-in 1s var(--ease) 4.4s forwards; }
-
-.final-happy-birthday {
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: clamp(1.6rem, 6vw, 2.2rem);
-  margin: 26px 0 30px;
-  color: var(--cream);
-  opacity: 0;
-}
-
-.screen-final.reveal .final-happy-birthday { animation: rise-in 1s var(--ease) 5.4s forwards; }
-
-.replay-btn {
-  color: var(--gold);
-  font-size: 0.85rem;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  opacity: 0;
-  min-height: 44px;
-}
-
-.screen-final.reveal .replay-btn { animation: rise-in 1s var(--ease) 6s forwards; }
-
-/* ============================================================
-   RESPONSIVE
-   ============================================================ */
-@media (min-width: 700px) {
-  .screen { padding: 48px 24px; }
-  .timeline-content, .birthday-content, .final-content { max-width: 600px; }
-}
-
-@media (max-width: 380px) {
-  .screen { padding: 24px 18px 44px; }
-  .memory-image-frame { max-height: 50vh; }
-}
-
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>The Naila File</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=DM+Serif+Display&family=Great+Vibes&family=Montserrat:wght@300;400;500;600&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Confetti Library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <!-- Ambient canvas: floating hearts / particles, drawn once and reused across every screen -->
-  <canvas id="particle-canvas"></canvas>
+  <!-- Background Audio -->
+  <audio id="backgroundMusic" loop preload="auto">  
+    <source src="https://files.catbox.moe/pf1rse.mp3" type="audio/mpeg">  
+    Your browser does not support the audio element.
+  </audio>
 
-  <!-- Music toggle — always visible, corner-anchored -->
-  <button id="music-toggle" class="music-toggle" aria-label="Toggle music">
-    <span class="music-icon">♪</span>
-  </button>
+  <!-- Music Toggle Button -->
+  <button id="musicToggleBtn" class="music-toggle-btn" style="display: none;">🔊</button>
 
-  <!-- ============================================================ -->
-  <!-- SCREEN 1 — OPENING -->
-  <!-- ============================================================ -->
-  <section id="screen-opening" class="screen screen-opening active">
-    <div class="opening-content">
-      <p class="opening-line">I have a little surprise for you&hellip;</p>
-      <button id="open-btn" class="tap-open-btn">
-        <span class="tap-open-icon">🎁</span>
-        <span>Tap to Open</span>
-      </button>
-    </div>
-  </section>
+  <!-- Particle Background Canvas -->
+  <canvas id="particleCanvas"></canvas>
 
-  <!-- ============================================================ -->
-  <!-- SCREEN 2 — BIRTHDAY WISH -->
-  <!-- ============================================================ -->
-  <section id="screen-birthday" class="screen screen-birthday">
-    <canvas id="confetti-canvas"></canvas>
-    <div class="birthday-content">
-      <h1 class="birthday-heading">Happy Birthday</h1>
-      <p class="birthday-subline">Today is not just another day&hellip;</p>
+  <div class="app-container">
 
-      <!-- ✏️ EDIT HERE: change the birthday wish text. Each <span> is revealed one line at a time. -->
-      <div id="wish-text" class="wish-text">
-        <span class="wish-line">Happy Birthday to someone who makes ordinary moments feel extraordinary.</span>
-        <span class="wish-line">May your smile always stay this beautiful,</span>
-        <span class="wish-line">and may every dream in your heart find its way to you.&nbsp;❤️</span>
-      </div>
-
-      <div class="continue-wrap">
-        <p class="more-line">There is more&hellip;</p>
-        <button id="to-memories-btn" class="continue-btn">Continue →</button>
+    <!-- SCREEN 1: INTRO -->
+    <div id="screen-intro" class="screen active">
+      <div class="content-box text-center">
+        <span class="status-badge">SYSTEM SECURE</span>
+        <div class="typewriter-box" id="introText"></div>
+        <button id="introBtn" class="btn primary-btn hidden">Proceed →</button>
       </div>
     </div>
-  </section>
 
-  <!-- ============================================================ -->
-  <!-- SCREEN 3 — MEMORY TIMELINE -->
-  <!-- ============================================================ -->
-  <section id="screen-timeline" class="screen screen-timeline">
-    <div class="timeline-content">
-      <h2 class="section-heading">Our Little Journey <span class="heart-accent">❤️</span></h2>
-      <p class="section-subline">Some moments deserve to be remembered forever.</p>
-
-      <!-- Timeline cards are generated by script.js from the `memories` array -->
-      <div id="timeline-list" class="timeline-list"></div>
-    </div>
-  </section>
-
-  <!-- ============================================================ -->
-  <!-- SCREEN 4 — MEMORY REVEAL (transition + detail, same screen) -->
-  <!-- ============================================================ -->
-  <section id="screen-memory" class="screen screen-memory">
-
-    <!-- Cinematic pre-reveal transition -->
-    <div id="memory-transition" class="memory-transition">
-      <p class="memory-transition-text">A beautiful memory from&hellip;</p>
-      <p id="memory-transition-date" class="memory-transition-date"></p>
-    </div>
-
-    <!-- Full memory detail, faded in after the transition -->
-    <div id="memory-detail" class="memory-detail">
-      <p id="memory-date" class="memory-date"></p>
-
-      <div class="memory-image-frame">
-        <img id="memory-image" class="memory-image" src="" alt="A shared memory">
-        <!-- Graceful fallback shown if the image file is missing or fails to load -->
-        <div id="memory-image-fallback" class="memory-image-fallback">
-          <span>🖼️</span>
-          <p>Add an image at the path set in <code>script.js</code></p>
+    <!-- SCREEN 2: NAME VERIFICATION -->
+    <div id="screen-name" class="screen">
+      <div class="content-box text-center">
+        <span class="status-badge">IDENTITY CHECK</span>
+        <div class="typewriter-box" id="nameText"></div>
+        <div id="nameForm" class="form-group hidden">
+          <input type="text" id="nameInput" placeholder="Enter your name..." autocomplete="off">
+          <button id="nameBtn" class="btn primary-btn">Verify →</button>
+          <p id="nameError" class="error-msg hidden">Access denied. That's not the name we're looking for.</p>
         </div>
       </div>
-
-      <p id="memory-caption" class="memory-caption"></p>
-
-      <div class="memory-nav">
-        <button id="prev-memory-btn" class="nav-btn nav-btn-text">← Previous</button>
-        <button id="like-btn" class="nav-btn nav-btn-heart" aria-label="Like this memory">♡</button>
-        <button id="next-memory-btn" class="nav-btn nav-btn-text">Next →</button>
-      </div>
-
-      <button id="back-to-timeline-btn" class="back-link">Back to Memories</button>
     </div>
-  </section>
 
-  <!-- ============================================================ -->
-  <!-- SCREEN 5 — FINAL SURPRISE -->
-  <!-- ============================================================ -->
-  <section id="screen-final" class="screen screen-final">
-    <div class="final-content">
-      <p class="final-line final-line-1">And finally&hellip;</p>
-      <p class="final-line final-line-2">If I could give you one thing today&hellip;</p>
-
-      <!-- ✏️ EDIT HERE: the one-thing line -->
-      <p class="final-line final-line-3">It would be the ability to see yourself through my eyes.&nbsp;❤️</p>
-
-      <div class="final-heart" aria-hidden="true">
-        <svg viewBox="0 0 100 90" class="heart-svg">
-          <path d="M50 85 C20 60, 0 40, 0 22 C0 6, 14 -2, 28 4 C38 8, 46 16, 50 24 C54 16, 62 8, 72 4 C86 -2, 100 6, 100 22 C100 40, 80 60, 50 85 Z"/>
-        </svg>
+    <!-- SCREEN 3: QUESTIONS -->
+    <div id="screen-questions" class="screen">
+      <div class="content-box text-center">
+        <span id="questionNumber" class="status-badge">QUESTION 01 / 04</span>
+        <div class="question-card">
+          <h2 id="questionTitle" class="question-heading"></h2>
+          <p id="questionSubtitle" class="question-sub"></p>
+          <div id="options" class="options-stack"></div>
+          <div id="feedback" class="feedback-box hidden"></div>
+        </div>
       </div>
-
-      <!-- ✏️ EDIT HERE: closing message -->
-      <p id="final-message" class="final-message">
-        Every memory above is a page in a story I never want to stop writing with you.
-        Thank you for being exactly who you are.
-      </p>
-
-      <h2 class="final-happy-birthday">Happy Birthday, once again.&nbsp;❤️</h2>
-
-      <button id="replay-btn" class="replay-btn">Watch it again</button>
     </div>
-  </section>
 
-  <script>
-/* ================================================================
-   ✏️ EDIT ZONE — MEMORIES
-   Add, remove, or edit memories freely. Each object needs:
-     date    -> shown as the heading on the timeline + reveal
-     image   -> path to the photo (put files in the /images folder)
-     caption -> the line shown under the photo
-   You can add unlimited entries, just copy the {} block below.
-   ================================================================ */
-const memories = [
-  {
-    date: "14 February 2024",
-    image: "images/memory1.jpg",
-    caption: "A memory I will always keep close to my heart. ❤️"
-  },
-  {
-    date: "25 March 2024",
-    image: "images/memory2.jpg",
-    caption: "Another beautiful chapter of our story."
-  },
-  {
-    date: "10 June 2024",
-    image: "images/memory3.jpg",
-    caption: "One of those days worth remembering forever."
-  },
-  {
-    date: "18 August 2024",
-    image: "images/memory4.jpg",
-    caption: "Simple, ordinary, and somehow unforgettable."
-  },
-  {
-    date: "01 January 2025",
-    image: "images/memory5.jpg",
-    caption: "A new year, and one more memory with you in it."
-  }
-];
+    <!-- SCREEN 4: CONFIRMATION -->
+    <div id="screen-confirmation" class="screen">
+      <div class="content-box text-center">
+        <span class="status-badge">VERIFICATION COMPLETE</span>
+        <div class="typewriter-box" id="confirmText"></div>
+        <div id="confirmBox" class="confirm-box hidden">
+          <h2 class="identity-name fade-in-text">Yes, You're NAILA ISLAM SHIFA</h2>
+          <div class="identity-sub-group">
+            <p class="identity-sub fade-in-delayed">Access granted to restricted files.</p>
+            <p class="identity-sub fade-in-delayed-more">Proceed when ready.</p>
+          </div>
+          <button id="enterBtn" class="btn primary-btn mt-large">Open The File →</button>
+        </div>
+      </div>
+    </div>
 
-/* ✏️ EDIT ZONE — MUSIC
-   Replace the path below with your own file inside /music.
-   If the file is missing or the browser blocks autoplay,
-   the button will simply stay silent until tapped. */
-const MUSIC_PATH = "music/birthday.mp3";
+    <!-- SCREEN 5: MAIN HUB -->
+    <div id="screen-hub" class="screen">
+      <div class="content-box wide">
+        <div class="hub-header">
+          <span class="status-badge">THE ARCHIVE</span>
+          <h1 class="hub-title">The Naila File</h1>
+          <p class="hub-subtitle">Select a section to explore.</p>
+        </div>
+        <div class="hub-grid">
+          <div class="hub-card" data-open="memories">
+            <span class="card-num">01</span>
+            <h2>Memories</h2>
+            <p>Moments, dates, and snapshots collected over time.</p>
+          </div>
+          <div class="hub-card" data-open="little-things">
+            <span class="card-num">02</span>
+            <h2>Little Things</h2>
+            <p>Small thoughts and unsaid observations.</p>
+          </div>
+          <div class="hub-card" data-open="letter">
+            <span class="card-num">03</span>
+            <h2>Surprise Letter</h2>
+            <p>A message kept inside a digital envelope.</p>
+          </div>
+          <div class="hub-card" data-open="last">
+            <span class="card-num">04</span>
+            <h2>One Last Thing</h2>
+            <p>The final piece of the puzzle.</p>
+          </div>
+        </div>
+      </div>
+    </div>
 
-/* ================================================================
-   STATE
-   ================================================================ */
-let currentMemoryIndex = 0;
-let music = null;
-let musicStarted = false;
+    <!-- SCREEN 6A: MEMORIES -->
+    <div id="screen-memories" class="screen">
+      <div class="content-box wide">
+        <button class="btn-back" data-back>← Back to Hub</button>
+        <div class="section-header">
+          <span class="status-badge">SECTION 01</span>
+          <h2>Memories</h2>
+          <p>Chronicles of days gone by.</p>
+        </div>
+        <div class="date-selector-wrapper">
+          <div id="dateSelector" class="date-selector"></div>
+        </div>
+        <div class="memory-display">
+          <div class="memory-image-container">
+            <img id="memoryImg" class="memory-img" src="" alt="Memory">
+            <div id="imageFallback" class="img-placeholder hidden">Image unavailable</div>
+          </div>
+          <div class="memory-details">
+            <span id="memoryDate" class="status-badge"></span>
+            <h3 id="memoryTitle" class="memory-date-title"></h3>
+            <p id="memoryCaption" class="memory-caption-text"></p>
+            <span id="memoryCounter" class="memory-counter-tag"></span>
+          </div>
+        </div>
+        <div class="memory-controls">
+          <button id="prevMemory" class="btn secondary-btn">← Previous</button>
+          <button id="nextMemory" class="btn primary-btn">Next →</button>
+        </div>
+      </div>
+    </div>
 
-/* ================================================================
-   SCREEN NAVIGATION
-   ================================================================ */
-function showScreen(id) {
-  document.querySelectorAll(".screen").forEach((el) => {
-    el.classList.remove("active", "enter");
-  });
-  const target = document.getElementById(id);
-  target.classList.add("active");
-  // Force reflow so the enter animation replays every time
-  void target.offsetWidth;
-  target.classList.add("enter");
-}
+    <!-- SCREEN 6B: LITTLE THINGS -->
+    <div id="screen-little-things" class="screen">
+      <div class="content-box wide">
+        <button class="btn-back" data-back>← Back to Hub</button>
+        <div class="section-header">
+          <span class="status-badge">SECTION 02</span>
+          <h2>Little Things</h2>
+          <p>Click the cards to flip and read.</p>
+        </div>
+        <div class="cards-grid">
+          <div class="flip-card" data-index="1">
+            <div class="flip-card-inner">
+              <div class="flip-card-front"><span class="card-label">CARD 01 // CLICK TO FLIP</span></div>
+              <div class="flip-card-back"><p>You laugh at the most random things, and honestly? That's the best part.</p></div>
+            </div>
+          </div>
+          <div class="flip-card" data-index="2">
+            <div class="flip-card-inner">
+              <div class="flip-card-front"><span class="card-label">CARD 02 // CLICK TO FLIP</span></div>
+              <div class="flip-card-back"><p>Stubborn? Maybe a little. Focused? Absolutely.</p></div>
+            </div>
+          </div>
+          <div class="flip-card" data-index="3">
+            <div class="flip-card-inner">
+              <div class="flip-card-front"><span class="card-label">CARD 03 // CLICK TO FLIP</span></div>
+              <div class="flip-card-back"><p>You pretend you don't care, but you notice every little detail.</p></div>
+            </div>
+          </div>
+          <div class="flip-card" data-index="4">
+            <div class="flip-card-inner">
+              <div class="flip-card-front"><span class="card-label">CARD 04 // CLICK TO FLIP</span></div>
+              <div class="flip-card-back"><p>Some people just make life feel a lot less complicated by simply being in it.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-/* ================================================================
-   SCREEN 1 -> 2 : OPEN
-   ================================================================ */
-document.getElementById("open-btn").addEventListener("click", () => {
-  spawnBurstHearts(18);
-  tryStartMusic();
-  setTimeout(() => {
-    showScreen("screen-birthday");
-    playConfetti();
-    revealWishLines();
-  }, 350);
-});
+    <!-- SCREEN 6C: SURPRISE LETTER -->
+    <div id="screen-letter" class="screen">
+      <div class="content-box">
+        <button class="btn-back" data-back>← Back to Hub</button>
+        <div class="section-header">
+          <span class="status-badge">SECTION 03</span>
+          <h2>Surprise Letter</h2>
+          <p>Unseal the envelope.</p>
+        </div>
+        <div class="envelope-wrapper">
+          <div id="envelope" class="envelope">
+            <div id="envelopeFront" class="envelope-front">
+              <span class="seal">OPEN LETTER</span>
+            </div>
+            <div id="letterContent" class="letter-content hidden">
+              <p>Dear Naila,</p>
+              <p>If you're reading this, it means you went through all the little steps just to see what's hidden at the end.</p>
+              <p>I just wanted to remind you how amazing it is to have you around. Thank you for all the shared laughs, the quiet moments, and the memories we've built.</p>
+              <p>Wishing you the happiest birthday ever!</p>
+              <p class="letter-sign">With all the warmth in the world.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-/* Reveal each wish line one at a time, then the continue button */
-function revealWishLines() {
-  const lines = document.querySelectorAll(".wish-line");
-  lines.forEach((line, i) => {
-    setTimeout(() => line.classList.add("visible"), 500 + i * 900);
-  });
-  const continueWrap = document.querySelector(".continue-wrap");
-  setTimeout(() => continueWrap.classList.add("visible"), 500 + lines.length * 900 + 300);
-}
+    <!-- SCREEN 6D: ONE LAST THING -->
+    <div id="screen-suspense" class="screen">
+      <div class="content-box text-center">
+        <div class="typewriter-box" id="lastText"></div>
+        <button id="lastBtn" class="btn primary-btn hidden">Continue →</button>
+      </div>
+    </div>
 
-document.getElementById("to-memories-btn").addEventListener("click", () => {
-  showScreen("screen-timeline");
-  renderTimeline();
-});
+    <!-- ========================================== -->
+    <!-- NEW BIRTHDAY SEQUENCE SECTIONS -->
+    <!-- ========================================== -->
 
-/* ================================================================
-   SCREEN 3 : TIMELINE
-   ================================================================ */
-function renderTimeline() {
-  const list = document.getElementById("timeline-list");
-  if (list.dataset.rendered === "true") {
-    // Already built — just replay the entrance animation
-    list.querySelectorAll(".timeline-card").forEach((card, i) => {
-      card.classList.remove("visible");
-      void card.offsetWidth;
-      setTimeout(() => card.classList.add("visible"), i * 120);
-    });
-    return;
-  }
+    <!-- SCREEN: SPECIAL WAITING -->
+    <div id="screen-special-waiting" class="screen">
+      <div class="content-box text-center mystery-container">
+        <p class="mystery-text fade-in-1">Something special is waiting for you...</p>
+        <p class="mystery-text fade-in-2">Are you ready?</p>
+        <button id="specialOpenBtn" class="glowing-btn">
+          <span>ENTER CELEBRATION ✨</span>
+          <div class="btn-glow"></div>
+        </button>
+      </div>
+    </div>
 
-  list.innerHTML = "";
-  memories.forEach((memory, index) => {
-    const card = document.createElement("button");
-    card.className = "timeline-card";
-    card.type = "button";
-    card.innerHTML = `
-      <span class="timeline-card-icon" aria-hidden="true">❤</span>
-      <span>
-        <span class="timeline-card-date">${escapeHTML(memory.date)}</span>
-        <p class="timeline-card-hint">Tap to relive this moment</p>
-      </span>
-    `;
-    card.addEventListener("click", () => openMemory(index));
-    list.appendChild(card);
-    setTimeout(() => card.classList.add("visible"), index * 120);
-  });
-  list.dataset.rendered = "true";
-}
+    <!-- SCREEN: CINEMATIC NAME REVEAL -->
+    <div id="screen-cinematic-name" class="screen">
+      <div class="name-reveal-container">
+        <h1 class="cinematic-name-line step-1">Naila</h1>
+        <h1 class="cinematic-name-line step-2">Islam</h1>
+        <h1 class="cinematic-name-line step-3">Shifa</h1>
+      </div>
+    </div>
 
-/* ================================================================
-   SCREEN 4 : MEMORY TRANSITION + DETAIL
-   ================================================================ */
-function openMemory(index) {
-  currentMemoryIndex = index;
-  const memory = memories[index];
+    <!-- SCREEN: FLOATING BALLOONS -->
+    <div id="screen-balloons-scene" class="screen">
+      <div class="scene-heading-centered">Entering a magical realm...</div>
+      <div id="floatingBalloonsContainer"></div>
+    </div>
 
-  showScreen("screen-memory");
+    <!-- SCREEN: MULTIPLE STYLES -->
+    <div id="screen-styles" class="screen">
+      <div class="style-container">
+        <div id="hbdStyle1" class="hbd-style">
+          <span class="hbd-line line-h">HAPPY</span>
+          <span class="hbd-line line-b">BIRTHDAY</span>
+          <span class="hbd-line line-s">SHIFA</span>
+        </div>
+      </div>
+    </div>
 
-  const transitionEl = document.getElementById("memory-transition");
-  const detailEl = document.getElementById("memory-detail");
-  const transitionDateEl = document.getElementById("memory-transition-date");
+    <!-- SCREEN: POP 5 BALLOONS -->
+    <div id="screen-pop" class="screen">
+      <div class="pop-instruction-centered">Tap the 5 balloons to reveal your surprises ✨</div>
+      <div id="interactiveBalloonArea"></div>
+      <div id="messagePopup" class="hidden-message-box">
+        <p id="popupText"></p>
+      </div>
+      <button id="proceedToCakeBtn" class="glowing-btn hidden">Continue to Birthday Cake ✨</button>
+    </div>
 
-  detailEl.classList.remove("active");
-  transitionEl.classList.remove("active");
-  transitionDateEl.textContent = memory.date;
+    <!-- SCREEN: BIRTHDAY CAKE -->
+    <div id="screen-cake" class="screen">
+      <div class="cake-scene-container">
+        <div class="cake-aura"></div>
+        <div class="birthday-cake">
+          <div class="candle">
+            <div class="flame"></div>
+          </div>
+          <div class="cake-layer layer-top"></div>
+          <div class="cake-layer layer-middle"></div>
+          <div class="cake-layer layer-bottom"></div>
+          <div class="plate"></div>
+        </div>
+        <div class="cake-text-content text-center">
+          <p class="cake-date">29 SEPTEMBER</p>
+          <h2 class="cake-title">HAPPY BIRTHDAY</h2>
+          <h3 class="cake-name">Naila Islam Shifa</h3>
+          <button id="finalThingBtn" class="btn primary-btn mt-large">Final Thing →</button>
+        </div>
+      </div>
+    </div>
 
-  void transitionEl.offsetWidth;
-  transitionEl.classList.add("active");
+    <!-- SCREEN: FINAL BIRTHDAY CLIMAX & ORIGINAL FINAL IMAGE -->
+    <div id="screen-final" class="screen">
+      <div class="content-box final-content-inner">
+        <button class="btn-back" data-back>← Back to Hub</button>
+        <div class="final-intro text-center">
+          <span class="status-badge">SPECIAL FRAME</span>
+          <h2>A Special Moment</h2>
+        </div>
+        <div class="final-card">
+          <div class="final-img-frame">
+            <img class="final-img" src="images/final.jpg" alt="Final Memory">
+          </div>
+          <h3 class="final-heading">To Many More</h3>
+          <p class="final-text">Some pictures capture a split second, but they hold onto a lifetime of feelings. Here's to making countless more memories just like this one.</p>
+          <p class="final-closing">Have an unforgettable day! 🌟</p>
+        </div>
+        <div class="text-center mt-large">
+          <h1 id="finalLine2" class="final-text-line-main show">Happy Birthday, Naila Islam Shifa ❤️</h1>
+          <button id="endBtn" class="btn primary-btn mt-large">Finish Journey</button>
+        </div>
+      </div>
+    </div>
 
-  setTimeout(() => {
-    transitionEl.classList.remove("active");
-    fillMemoryDetail(memory);
-    detailEl.classList.remove("active");
-    void detailEl.offsetWidth;
-    detailEl.classList.add("active");
-  }, 1600);
-}
+    <!-- SCREEN: END OF FILE -->
+    <div id="screen-end" class="screen">
+      <div class="content-box text-center">
+        <span class="status-badge">END OF FILE</span>
+        <div class="typewriter-box" id="endText"></div>
+        <button id="restartBtn" class="btn secondary-btn hidden">Start Over ↺</button>
+      </div>
+    </div>
 
-function fillMemoryDetail(memory) {
-  document.getElementById("memory-date").textContent = memory.date;
-  document.getElementById("memory-caption").textContent = memory.caption;
+  </div>
 
-  const frame = document.querySelector(".memory-image-frame");
-  const img = document.getElementById("memory-image");
-
-  frame.classList.remove("revealed", "broken");
-  img.src = "";
-
-  img.onload = () => {
-    void frame.offsetWidth;
-    frame.classList.add("revealed");
-  };
-  img.onerror = () => {
-    frame.classList.add("broken", "revealed");
-  };
-
-  // Small delay so the blur-to-clear reveal reads as intentional, not a load flicker
-  setTimeout(() => { img.src = memory.image; }, 250);
-
-  // Reset the like button for the new memory
-  const likeBtn = document.getElementById("like-btn");
-  likeBtn.classList.remove("liked");
-  likeBtn.textContent = "♡";
-}
-
-document.getElementById("prev-memory-btn").addEventListener("click", () => {
-  const newIndex = (currentMemoryIndex - 1 + memories.length) % memories.length;
-  openMemory(newIndex);
-});
-
-document.getElementById("next-memory-btn").addEventListener("click", () => {
-  const newIndex = (currentMemoryIndex + 1) % memories.length;
-  openMemory(newIndex);
-});
-
-document.getElementById("like-btn").addEventListener("click", (e) => {
-  const btn = e.currentTarget;
-  const liked = btn.classList.toggle("liked");
-  btn.textContent = liked ? "❤" : "♡";
-  if (liked) spawnBurstHearts(8);
-});
-
-document.getElementById("back-to-timeline-btn").addEventListener("click", () => {
-  showScreen("screen-timeline");
-});
-
-/* ================================================================
-   SCREEN 5 : FINAL SURPRISE
-   Triggered automatically once the person has viewed every memory,
-   or manually via a "Continue" moment after the last memory.
-   Simplest, most reliable trigger: a button appears after browsing —
-   here we attach it to reaching the end of the timeline naturally,
-   but also allow direct access after any memory via a swipe-through.
-   ================================================================ */
-function goToFinal() {
-  showScreen("screen-final");
-  const finalScreen = document.getElementById("screen-final");
-  finalScreen.classList.remove("reveal");
-  void finalScreen.offsetWidth;
-  finalScreen.classList.add("reveal");
-}
-
-document.getElementById("replay-btn").addEventListener("click", () => {
-  currentMemoryIndex = 0;
-  showScreen("screen-opening");
-});
-
-// Provide a clear, explicit way in: a final surprise link on the timeline screen
-(function addFinalSurpriseLink() {
-  const timelineContent = document.querySelector(".timeline-content");
-  const link = document.createElement("button");
-  link.className = "back-link";
-  link.style.marginTop = "36px";
-  link.type = "button";
-  link.textContent = "I've relived them all →";
-  link.addEventListener("click", goToFinal);
-  timelineContent.appendChild(link);
-})();
-
-/* ================================================================
-   MUSIC
-   ================================================================ */
-function tryStartMusic() {
-  if (musicStarted) return;
-  musicStarted = true;
-  music = new Audio(MUSIC_PATH);
-  music.loop = true;
-  music.volume = 0.55;
-  music.play()
-    .then(() => document.getElementById("music-toggle").classList.add("playing"))
-    .catch(() => {
-      // Autoplay blocked — that's fine, the person can tap the button themselves
-      musicStarted = false;
-    });
-}
-
-document.getElementById("music-toggle").addEventListener("click", () => {
-  if (!music) {
-    tryStartMusic();
-    return;
-  }
-  const btn = document.getElementById("music-toggle");
-  if (music.paused) {
-    music.play().then(() => btn.classList.add("playing")).catch(() => {});
-  } else {
-    music.pause();
-    btn.classList.remove("playing");
-  }
-});
-
-/* ================================================================
-   AMBIENT PARTICLES (floating hearts / glow specks, always running)
-   ================================================================ */
-const particleCanvas = document.getElementById("particle-canvas");
-const pCtx = particleCanvas.getContext("2d");
-let particles = [];
-
-function resizeParticleCanvas() {
-  particleCanvas.width = window.innerWidth;
-  particleCanvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resizeParticleCanvas);
-resizeParticleCanvas();
-
-function makeParticle(burst) {
-  return {
-    x: Math.random() * particleCanvas.width,
-    y: burst ? particleCanvas.height * 0.7 : particleCanvas.height + 20,
-    size: 4 + Math.random() * 8,
-    speed: 0.3 + Math.random() * 0.6,
-    drift: (Math.random() - 0.5) * 0.4,
-    opacity: 0.15 + Math.random() * 0.35,
-    isHeart: Math.random() > 0.5
-  };
-}
-
-for (let i = 0; i < 22; i++) particles.push(makeParticle(false));
-
-function spawnBurstHearts(count) {
-  for (let i = 0; i < count; i++) particles.push(makeParticle(true));
-}
-
-function drawHeart(ctx, x, y, size, opacity) {
-  ctx.save();
-  ctx.globalAlpha = opacity;
-  ctx.fillStyle = "#e8577f";
-  ctx.beginPath();
-  const topCurveHeight = size * 0.3;
-  ctx.moveTo(x, y + topCurveHeight);
-  ctx.bezierCurveTo(x, y, x - size / 2, y, x - size / 2, y + topCurveHeight);
-  ctx.bezierCurveTo(x - size / 2, y + (size + topCurveHeight) / 2, x, y + (size + topCurveHeight) / 1.4, x, y + size);
-  ctx.bezierCurveTo(x, y + (size + topCurveHeight) / 1.4, x + size / 2, y + (size + topCurveHeight) / 2, x + size / 2, y + topCurveHeight);
-  ctx.bezierCurveTo(x + size / 2, y, x, y, x, y + topCurveHeight);
-  ctx.fill();
-  ctx.restore();
-}
-
-function animateParticles() {
-  pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-  particles.forEach((p) => {
-    p.y -= p.speed;
-    p.x += p.drift;
-    if (p.isHeart) {
-      drawHeart(pCtx, p.x, p.y, p.size, p.opacity);
-    } else {
-      pCtx.save();
-      pCtx.globalAlpha = p.opacity;
-      pCtx.fillStyle = "#d8ac74";
-      pCtx.beginPath();
-      pCtx.arc(p.x, p.y, p.size / 4, 0, Math.PI * 2);
-      pCtx.fill();
-      pCtx.restore();
-    }
-  });
-  particles = particles.filter((p) => p.y > -30);
-  while (particles.length < 22) particles.push(makeParticle(false));
-  requestAnimationFrame(animateParticles);
-}
-animateParticles();
-
-/* ================================================================
-   CONFETTI (plays once when the birthday screen appears)
-   ================================================================ */
-const confettiCanvas = document.getElementById("confetti-canvas");
-const cCtx = confettiCanvas.getContext("2d");
-let confettiPieces = [];
-let confettiRunning = false;
-
-function resizeConfettiCanvas() {
-  confettiCanvas.width = confettiCanvas.parentElement.offsetWidth;
-  confettiCanvas.height = confettiCanvas.parentElement.offsetHeight;
-}
-window.addEventListener("resize", resizeConfettiCanvas);
-
-function playConfetti() {
-  resizeConfettiCanvas();
-  const colors = ["#e8577f", "#d8ac74", "#f28aa6", "#f4ecdf"];
-  confettiPieces = Array.from({ length: 70 }, () => ({
-    x: Math.random() * confettiCanvas.width,
-    y: -20 - Math.random() * confettiCanvas.height * 0.5,
-    size: 4 + Math.random() * 6,
-    speed: 1.5 + Math.random() * 2.5,
-    drift: (Math.random() - 0.5) * 1.5,
-    rotation: Math.random() * 360,
-    rotationSpeed: (Math.random() - 0.5) * 8,
-    color: colors[Math.floor(Math.random() * colors.length)]
-  }));
-
-  if (!confettiRunning) {
-    confettiRunning = true;
-    animateConfetti();
-  }
-
-  // Stop generating new pieces after a few seconds; existing ones fall off-screen
-  setTimeout(() => { confettiPieces = confettiPieces.filter(() => false); }, 4500);
-}
-
-function animateConfetti() {
-  cCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-  confettiPieces.forEach((c) => {
-    c.y += c.speed;
-    c.x += c.drift;
-    c.rotation += c.rotationSpeed;
-    cCtx.save();
-    cCtx.translate(c.x, c.y);
-    cCtx.rotate((c.rotation * Math.PI) / 180);
-    cCtx.fillStyle = c.color;
-    cCtx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size * 0.4);
-    cCtx.restore();
-  });
-  confettiPieces = confettiPieces.filter((c) => c.y < confettiCanvas.height + 30);
-  if (confettiPieces.length > 0 || confettiRunning) {
-    requestAnimationFrame(animateConfetti);
-  }
-}
-
-/* ================================================================
-   UTIL
-   ================================================================ */
-function escapeHTML(str) {
-  const div = document.createElement("div");
-  div.textContent = str;
-  return div.innerHTML;
-}
-
-</script>
+  <script src="script.js"></script>
 </body>
 </html>
