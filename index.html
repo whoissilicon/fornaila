@@ -204,16 +204,6 @@
     text-shadow: none;
   }
 
-  .subdate{
-    font-family:'Space Grotesk', sans-serif;
-    color: var(--white);
-    opacity:0.55;
-    font-size: 0.85rem;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 36px;
-  }
-
   .countdown{
     display:flex;
     justify-content:center;
@@ -348,6 +338,31 @@
     margin-top: 16px;
   }
 
+  .click-link{
+    display: inline-block;
+    margin-top: 22px;
+    background: linear-gradient(135deg, rgba(243,198,107,0.18), rgba(255,143,179,0.14));
+    border: 1px solid rgba(243,198,107,0.5);
+    color: var(--white);
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 500;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 10px 26px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 16px rgba(243,198,107,0.2);
+  }
+  .click-link:hover{
+    background: linear-gradient(135deg, rgba(243,198,107,0.3), rgba(255,143,179,0.24));
+    border-color: rgba(243,198,107,0.8);
+    box-shadow: 0 0 26px rgba(243,198,107,0.4);
+    transform: translateY(-2px);
+  }
+
   .arrived{ display:none; }
   .arrived.show{ display:block; }
   .arrived h2{
@@ -385,7 +400,6 @@
     .card{ padding: 32px 18px; }
     .icon-row{ letter-spacing: 8px; font-size: 2.1rem; margin-bottom: 10px; }
     .tag{ font-size: 0.6rem; padding: 5px 12px; margin-bottom: 16px; }
-    .subdate{ margin-bottom: 26px; }
     .unit{ min-width: 62px; padding: 12px 4px; border-radius: 12px; }
     .countdown{ gap: 7px; margin-bottom: 24px; }
     .num{ font-size: 1.5rem; }
@@ -441,7 +455,11 @@
     </p>
 
     <button class="why-btn" id="whyBtn" type="button">Why?</button>
-    <p class="why-answer" id="whyAnswer">It's very confidential.<br>Are you ready for the surprise? ✨<br>A new link will be send to you 😗</p>
+    <p class="why-answer" id="whyAnswer">It's very confidential.<br>Are you ready for the surprise? ✨</p>
+
+    <div>
+      <a class="click-link" href="https://whoissilicon.github.io/foryou/">Click Here</a>
+    </div>
 
     <div class="arrived" id="arrivedBox">
       <h2>🎂 IT'S FINALLY HERE 🎉</h2>
