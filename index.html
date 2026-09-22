@@ -20,7 +20,7 @@
 
   *{margin:0;padding:0;box-sizing:border-box;}
 
-  html,body{height:100%;}
+  html,body{min-height:100%;}
 
   body{
     min-height:100vh;
@@ -29,9 +29,10 @@
     display:flex;
     align-items:center;
     justify-content:center;
-    overflow:hidden;
+    overflow-x:hidden;
+    overflow-y:auto;
     position:relative;
-    padding: 24px;
+    padding: 24px 16px;
   }
 
   /* moving grid floor */
@@ -343,7 +344,7 @@
   }
   .why-answer.show{
     opacity: 1;
-    max-height: 60px;
+    max-height: 90px;
     margin-top: 16px;
   }
 
@@ -381,9 +382,22 @@
   }
 
   @media (max-width: 480px){
-    .card{ padding: 36px 20px; }
-    .unit{ min-width: 66px; padding: 12px 6px; }
-    .countdown{ gap: 8px; }
+    .card{ padding: 32px 18px; }
+    .icon-row{ letter-spacing: 8px; font-size: 2.1rem; margin-bottom: 10px; }
+    .tag{ font-size: 0.6rem; padding: 5px 12px; margin-bottom: 16px; }
+    .subdate{ margin-bottom: 26px; }
+    .unit{ min-width: 62px; padding: 12px 4px; border-radius: 12px; }
+    .countdown{ gap: 7px; margin-bottom: 24px; }
+    .num{ font-size: 1.5rem; }
+    .label{ font-size: 0.56rem; letter-spacing: 1.5px; }
+    .message{ font-size: 0.98rem; }
+    .divider{ margin: 4px 0 20px; }
+  }
+
+  @media (max-width: 360px){
+    .unit{ min-width: 54px; padding: 10px 3px; }
+    .num{ font-size: 1.3rem; }
+    .icon-row{ letter-spacing: 5px; font-size: 1.9rem; }
   }
 </style>
 </head>
@@ -398,7 +412,7 @@
   <div class="card">
     <div class="icon-row"><span>🎂</span><span>🎉</span><span>🎈</span></div>
     <span class="tag">Birthday Countdown</span>
-    <h1>HAPPY BIRTHDAY LOADING</h1>
+    <h1>COUNTDOWN</h1>
     <div class="subdate">29 · 09 · 2026</div>
 
     <div class="countdown" id="countdownBox">
@@ -428,7 +442,7 @@
     </p>
 
     <button class="why-btn" id="whyBtn" type="button">Why?</button>
-    <p class="why-answer" id="whyAnswer">Are you ready for the surprise? ✨</p>
+    <p class="why-answer" id="whyAnswer">It's very confidential.<br>Are you ready for the surprise? ✨</p>
 
     <div class="arrived" id="arrivedBox">
       <h2>🎂 HAPPY BIRTHDAY 🎉</h2>
